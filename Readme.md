@@ -1,7 +1,7 @@
 # Проект «Киноман»
 
 * Студент: [Заур Хутинаев](https://up.htmlacademy.ru/ecmascript/17/user/645933).
-* Наставник: `Неизвестно`.
+* Наставник: [Семён Якушев](https://htmlacademy.ru/profile/id1118791).
 
 ---
 
