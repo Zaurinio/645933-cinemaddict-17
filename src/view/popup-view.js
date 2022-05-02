@@ -12,7 +12,7 @@ const createPopupView = (movie) => {
   const runtimeHours = Math.trunc(Number(runtime) / 60);
   const runtimeMinutes = Number(runtime) % 60;
 
-  const addingMovieGenres = () => {
+  const addMovieGenres = () => {
     let element = '';
 
     for (let i = 0; i < genre.length; i++) {
@@ -23,7 +23,7 @@ const createPopupView = (movie) => {
   };
 
 
-  const addingMovieComments = () => {
+  const addMovieComments = () => {
     let comments = '';
     for (let i = 0; i < filmCommentsId.length; i++) {
       const element = allComments.find((comment) => Number(comment.id) === filmCommentsId[i]);
@@ -102,7 +102,7 @@ const createPopupView = (movie) => {
             <tr class="film-details__row">
               <td class="film-details__term">Genres</td>
               <td class="film-details__cell">
-                ${addingMovieGenres()}
+                ${addMovieGenres()}
             </tr>
           </table>
 
@@ -124,7 +124,7 @@ const createPopupView = (movie) => {
         <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">4</span></h3>
 
         <ul class="film-details__comments-list">
-        ${addingMovieComments()}
+        ${addMovieComments()}
         </ul>
 
         <div class="film-details__new-comment">
