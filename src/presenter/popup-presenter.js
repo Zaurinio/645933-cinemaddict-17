@@ -2,11 +2,15 @@ import PopupView from '../view/popup-view.js';
 import { render } from '../render.js';
 
 export default class PopupPresenter {
-  init = (popupContainer, moviesModel) => {
-    this.popupContainer = popupContainer;
-    this.moviesModel = moviesModel;
-    this.pageMovies = [...this.moviesModel.getMovies()];
+  #popupContainer = null;
+  #moviesModel = null;
+  #pageMovies = [];
 
-    render(new PopupView(this.pageMovies[0]), this.popupContainer);
+  init = (popupContainer, moviesModel) => {
+    this.#popupContainer = popupContainer;
+    this.#moviesModel = moviesModel;
+    this.#pageMovies = [...this.#moviesModel.movies];
+
+    render(new PopupView(this.#pageMovies[0]), this.#popupContainer);
   };
 }

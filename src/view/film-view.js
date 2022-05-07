@@ -2,7 +2,7 @@ import { createElement } from '../render.js';
 import { humanizeMovieReleaseDate } from '../utils.js';
 
 const createFilmTemplate = (movie) => {
-  const { filmCommentsId } = movie;
+  const { filmCommentsId, id } = movie;
   const { title, totalRating, runtime, genre, description } = movie.filmInfo;
   const { date } = movie.filmInfo.release;
   const releaseDate = humanizeMovieReleaseDate(date);
@@ -10,7 +10,7 @@ const createFilmTemplate = (movie) => {
 
   return (
     `<article class="film-card">
-  <a class="film-card__link">
+  <a class="film-card__link" data-id=${id}>
     <h3 class="film-card__title">${title}</h3>
     <p class="film-card__rating">${totalRating}</p>
     <p class="film-card__info">
@@ -32,24 +32,27 @@ const createFilmTemplate = (movie) => {
 };
 
 export default class FilmView {
+  #element = null;
+  #movie = null;
+
   constructor(movie) {
-    this.movie = movie;
+    this.#movie = movie;
   }
 
 
-  getTemplate() {
-    return createFilmTemplate(this.movie);
+  get template() {
+    return createFilmTemplate(this.#movie);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   deleteElement() {
-    this.element = null;
+    this.#element = null;
   }
 }
