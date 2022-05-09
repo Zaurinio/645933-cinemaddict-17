@@ -36,7 +36,7 @@ export default class PagePresenter {
     }
 
     if (this.#pageMovies.length > MOVIE_COUNT_PER_STEP) {
-      render(this.#showMoreButtonComponent, this.#pageContainer);
+      render(this.#showMoreButtonComponent, this.#filmsComponent.filmsList);
       this.#showMoreButtonComponent.element.addEventListener('click', this.#handleShowMoreButtonClick);
     }
 

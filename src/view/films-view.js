@@ -29,6 +29,10 @@ export default class FilmsView {
     return this.#element.querySelector('.films-list__container');
   }
 
+  get filmsList() {
+    return this.#element.querySelector('.films-list');
+  }
+
   deleteElement() {
     this.#element = null;
   }
