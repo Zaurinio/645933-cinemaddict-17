@@ -1,4 +1,4 @@
-import FilmListView from '../view/film-list-view.js';
+import FilmsView from '../view/films-view.js';
 import FilmView from '../view/film-view.js';
 import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
@@ -10,13 +10,13 @@ import { render } from '../render.js';
 const MOVIE_COUNT_PER_STEP = 5;
 
 export default class PagePresenter {
-  #filmListComponent = new FilmListView();
+  #filmsComponent = new FilmsView();
   #pageContainer = null;
   #moviesModel = null;
   #pageMovies = [];
   #renderedMovieCount = MOVIE_COUNT_PER_STEP;
   #showMoreButtonComponent = new ShowMoreButtonView();
-  #emptyPageCpmponent = new EmptyPageView();
+  #emptyPageComponent = new EmptyPageView();
 
   init = (pageContainer, moviesModel) => {
     this.#pageContainer = pageContainer;
@@ -25,16 +25,15 @@ export default class PagePresenter {
 
     render(new FilterView(), this.#pageContainer);
     render(new SortView(), this.#pageContainer);
-    render(this.#filmListComponent, this.#pageContainer);
+    render(this.#filmsComponent, this.#pageContainer);
 
     if (this.#pageMovies.length > 0) {
       for (let i = 0; i < Math.min(this.#pageMovies.length, MOVIE_COUNT_PER_STEP); i++) {
         this.#renderMovie(this.#pageMovies[i]);
       }
     } else {
-      render(this.#emptyPageCpmponent, this.#filmListComponent.element);
+      render(this.#emptyPageComponent, this.#filmsComponent.element);
     }
-
 
     if (this.#pageMovies.length > MOVIE_COUNT_PER_STEP) {
       render(this.#showMoreButtonComponent, this.#pageContainer);
@@ -73,20 +72,20 @@ export default class PagePresenter {
 
   #renderMovie = (movie) => {
     const movieComponent = new FilmView(movie);
-    render(movieComponent, this.#filmListComponent.element);
+    render(movieComponent, this.#filmsComponent.filmsListContainer);
   };
 
   #handleShowMoreButtonClick = (evt) => {
     evt.preventDefault();
     this.#pageMovies
       .slice(this.#renderedMovieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP)
-      .forEach((task) => this.#renderMovie(task));
+      .forEach((movie) => this.#renderMovie(movie));
 
     this.#renderedMovieCount += MOVIE_COUNT_PER_STEP;
 
     if (this.#renderedMovieCount >= this.#pageMovies.length) {
       this.#showMoreButtonComponent.element.remove();
-      this.#showMoreButtonComponent.removeElement();
+      this.#showMoreButtonComponent.deleteElement();
     }
   };
 }
