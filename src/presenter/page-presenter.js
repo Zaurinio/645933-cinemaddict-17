@@ -1,17 +1,22 @@
-import FilmListView from '../view/film-list-view.js';
+import FilmsView from '../view/films-view.js';
 import FilmView from '../view/film-view.js';
 import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
 import PopupView from '../view/popup-view';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
+import EmptyPageView from '../view/empty-page-view.js';
 import { render } from '../render.js';
 
+const MOVIE_COUNT_PER_STEP = 5;
+
 export default class PagePresenter {
-  #filmListComponent = new FilmListView();
+  #filmsComponent = new FilmsView();
   #pageContainer = null;
   #moviesModel = null;
   #pageMovies = [];
-  #popupContainer = null;
+  #renderedMovieCount = MOVIE_COUNT_PER_STEP;
+  #showMoreButtonComponent = new ShowMoreButtonView();
+  #emptyPageComponent = new EmptyPageView();
 
   init = (pageContainer, moviesModel) => {
     this.#pageContainer = pageContainer;
@@ -20,11 +25,19 @@ export default class PagePresenter {
 
     render(new FilterView(), this.#pageContainer);
     render(new SortView(), this.#pageContainer);
-    render(this.#filmListComponent, this.#pageContainer);
-    render(new ShowMoreButtonView(), this.#pageContainer);
+    render(this.#filmsComponent, this.#pageContainer);
 
-    for (let i = 0; i < this.#pageMovies.length; i++) {
-      render(new FilmView(this.#pageMovies[i]), this.#filmListComponent.element);
+    if (this.#pageMovies.length > 0) {
+      for (let i = 0; i < Math.min(this.#pageMovies.length, MOVIE_COUNT_PER_STEP); i++) {
+        this.#renderMovie(this.#pageMovies[i]);
+      }
+    } else {
+      render(this.#emptyPageComponent, this.#filmsComponent.element);
+    }
+
+    if (this.#pageMovies.length > MOVIE_COUNT_PER_STEP) {
+      render(this.#showMoreButtonComponent, this.#filmsComponent.filmsList);
+      this.#showMoreButtonComponent.element.addEventListener('click', this.#handleShowMoreButtonClick);
     }
 
     const onEscKeyDown = (evt) => {
@@ -54,5 +67,25 @@ export default class PagePresenter {
       showPopup(evt);
       document.querySelector('.film-details__close-btn').addEventListener('click', hidePopup);
     });
+
+  };
+
+  #renderMovie = (movie) => {
+    const movieComponent = new FilmView(movie);
+    render(movieComponent, this.#filmsComponent.filmsListContainer);
+  };
+
+  #handleShowMoreButtonClick = (evt) => {
+    evt.preventDefault();
+    this.#pageMovies
+      .slice(this.#renderedMovieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP)
+      .forEach((movie) => this.#renderMovie(movie));
+
+    this.#renderedMovieCount += MOVIE_COUNT_PER_STEP;
+
+    if (this.#renderedMovieCount >= this.#pageMovies.length) {
+      this.#showMoreButtonComponent.element.remove();
+      this.#showMoreButtonComponent.deleteElement();
+    }
   };
 }
