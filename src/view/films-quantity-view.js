@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createFilmsQuantity = () => (
   `<section class="footer__statistics">
@@ -6,22 +6,8 @@ const createFilmsQuantity = () => (
   </section>`
 );
 
-export default class FilmsQuantityView {
-  #element = null;
-
+export default class FilmsQuantityView extends AbstractView {
   get template() {
     return createFilmsQuantity();
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  deleteElement() {
-    this.#element = null;
   }
 }

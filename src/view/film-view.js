@@ -1,5 +1,5 @@
-import { createElement } from '../render.js';
-import { humanizeMovieReleaseDate } from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
+import { humanizeMovieReleaseDate } from '../utils/dates.js';
 
 const createFilmTemplate = (movie) => {
   const { filmCommentsId, id } = movie;
@@ -31,28 +31,16 @@ const createFilmTemplate = (movie) => {
   );
 };
 
-export default class FilmView {
-  #element = null;
+export default class FilmView extends AbstractView {
   #movie = null;
 
   constructor(movie) {
+    super();
     this.#movie = movie;
   }
 
 
   get template() {
     return createFilmTemplate(this.#movie);
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  deleteElement() {
-    this.#element = null;
   }
 }
