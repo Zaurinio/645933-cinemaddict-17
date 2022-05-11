@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createEmptyPageTemplate = () => (
   `<section class="films">
@@ -9,22 +9,8 @@ const createEmptyPageTemplate = () => (
 );
 
 
-export default class EmptyPageView {
-  #element = null;
-
+export default class EmptyPageView extends AbstractView {
   get template() {
     return createEmptyPageTemplate();
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  deleteElement() {
-    this.#element = null;
   }
 }

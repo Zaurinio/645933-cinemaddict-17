@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createFilmsView = () => (
   `<section class="films">
@@ -10,30 +10,26 @@ const createFilmsView = () => (
 
 );
 
-export default class FilmsView {
-  #element = null;
-
+export default class FilmsView extends AbstractView {
   get template() {
     return createFilmsView();
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
   get filmsListContainer() {
-    return this.#element.querySelector('.films-list__container');
+    return this.element.querySelector('.films-list__container');
   }
 
   get filmsList() {
-    return this.#element.querySelector('.films-list');
+    return this.element.querySelector('.films-list');
   }
 
-  deleteElement() {
-    this.#element = null;
-  }
+  setClickHandler = (callback) => {
+    this._callback.click = callback;
+    this.filmsListContainer.addEventListener('click', this.#clickHandler);
+  };
+
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click(evt);
+  };
 }

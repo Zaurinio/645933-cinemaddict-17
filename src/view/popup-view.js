@@ -1,6 +1,6 @@
-import { createElement } from '../render.js';
-import { humanizePopupReleaseDate } from '../utils.js';
-import { humanizeCommentDate } from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
+import { humanizePopupReleaseDate } from '../utils/dates.js';
+import { humanizeCommentDate } from '../utils/dates.js';
 import { allComments } from '../mock/comments.js';
 
 const createPopupView = (movie) => {
@@ -163,28 +163,16 @@ const createPopupView = (movie) => {
   );
 };
 
-export default class PopupView {
-  #element = null;
+export default class PopupView extends AbstractView {
   #movie = null;
 
   constructor(movie) {
+    super();
     this.#movie = movie;
   }
 
   get template() {
     return createPopupView(this.#movie);
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  deleteElement() {
-    this.#element = null;
   }
 }
 

@@ -5,7 +5,7 @@ import SortView from '../view/sort-view.js';
 import PopupView from '../view/popup-view';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import EmptyPageView from '../view/empty-page-view.js';
-import { render } from '../render.js';
+import { render, remove } from '../framework/render.js';
 
 const MOVIE_COUNT_PER_STEP = 5;
 
@@ -17,6 +17,8 @@ export default class PagePresenter {
   #renderedMovieCount = MOVIE_COUNT_PER_STEP;
   #showMoreButtonComponent = new ShowMoreButtonView();
   #emptyPageComponent = new EmptyPageView();
+
+  #popupComponent = (movie) => new PopupView(movie);
 
   init = (pageContainer, moviesModel) => {
     this.#pageContainer = pageContainer;
@@ -37,7 +39,7 @@ export default class PagePresenter {
 
     if (this.#pageMovies.length > MOVIE_COUNT_PER_STEP) {
       render(this.#showMoreButtonComponent, this.#filmsComponent.filmsList);
-      this.#showMoreButtonComponent.element.addEventListener('click', this.#handleShowMoreButtonClick);
+      this.#showMoreButtonComponent.setClickHandler(this.#handleShowMoreButtonClick);
     }
 
     const onEscKeyDown = (evt) => {
@@ -52,7 +54,7 @@ export default class PagePresenter {
       const filmCard = evt.target.closest('.film-card__link');
       if (filmCard) {
         const movieId = filmCard.dataset.id;
-        document.body.appendChild(new PopupView(this.#pageMovies[movieId]).element);
+        document.body.appendChild(this.#popupComponent(this.#pageMovies[movieId]).element);
         document.body.classList.add('hide-overflow');
         document.addEventListener('keydown', onEscKeyDown);
       }
@@ -63,9 +65,9 @@ export default class PagePresenter {
       document.body.classList.remove('hide-overflow');
     }
 
-    document.body.querySelector('.films-list__container').addEventListener('click', (evt) => {
+    this.#filmsComponent.setClickHandler((evt) => {
       showPopup(evt);
-      document.querySelector('.film-details__close-btn').addEventListener('click', hidePopup);
+      document.body.querySelector('.film-details__close-btn').addEventListener('click', hidePopup);
     });
 
   };
@@ -75,8 +77,7 @@ export default class PagePresenter {
     render(movieComponent, this.#filmsComponent.filmsListContainer);
   };
 
-  #handleShowMoreButtonClick = (evt) => {
-    evt.preventDefault();
+  #handleShowMoreButtonClick = () => {
     this.#pageMovies
       .slice(this.#renderedMovieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP)
       .forEach((movie) => this.#renderMovie(movie));
@@ -84,8 +85,7 @@ export default class PagePresenter {
     this.#renderedMovieCount += MOVIE_COUNT_PER_STEP;
 
     if (this.#renderedMovieCount >= this.#pageMovies.length) {
-      this.#showMoreButtonComponent.element.remove();
-      this.#showMoreButtonComponent.deleteElement();
+      remove(this.#showMoreButtonComponent);
     }
   };
 }
