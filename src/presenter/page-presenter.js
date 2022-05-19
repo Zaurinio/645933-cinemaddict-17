@@ -1,13 +1,14 @@
 import FilmsView from '../view/films-view.js';
-import FilmView from '../view/film-view.js';
 import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
-import PopupView from '../view/popup-view';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import EmptyPageView from '../view/empty-page-view.js';
 import { render, remove } from '../framework/render.js';
+import MoviePresenter from './movie-presenter';
+import { updateItem } from '../utils/common.js';
 
 const MOVIE_COUNT_PER_STEP = 5;
+
 
 export default class PagePresenter {
   #filmsComponent = new FilmsView();
@@ -17,18 +18,59 @@ export default class PagePresenter {
   #renderedMovieCount = MOVIE_COUNT_PER_STEP;
   #showMoreButtonComponent = new ShowMoreButtonView();
   #emptyPageComponent = new EmptyPageView();
+  #sortComponent = new SortView();
+  #filterComponent = new FilterView();
+  #moviePresenter = new Map();
 
-  #popupComponent = (movie) => new PopupView(movie);
-
-  init = (pageContainer, moviesModel) => {
+  constructor(pageContainer, moviesModel) {
     this.#pageContainer = pageContainer;
     this.#moviesModel = moviesModel;
+  }
+
+  init = () => {
     this.#pageMovies = [...this.#moviesModel.movies];
 
-    render(new FilterView(), this.#pageContainer);
-    render(new SortView(), this.#pageContainer);
-    render(this.#filmsComponent, this.#pageContainer);
+    this.#renderPage();
+  };
 
+  #handleModeChange = () => {
+    this.#moviePresenter.forEach((presenter) => presenter.resetView());
+  };
+
+  #handleMovieChange = (updatedMovie) => {
+    this.#pageMovies = updateItem(this.#pageMovies, updatedMovie);
+    this.#moviePresenter.get(updatedMovie.id).init(updatedMovie);
+  };
+
+  #renderFilter = () => {
+    render(this.#filterComponent, this.#pageContainer);
+  };
+
+  #renderSort = () => {
+    render(this.#sortComponent, this.#pageContainer);
+  };
+
+  #renderMovie = (movie) => {
+    const moviePresenter = new MoviePresenter(this.#filmsComponent.filmsListContainer, this.#handleMovieChange, this.#handleModeChange);
+    moviePresenter.init(movie);
+    this.#moviePresenter.set(movie.id, moviePresenter);
+  };
+
+  #renderMovies = (from, to) => {
+    this.#pageMovies
+      .slice(from, to)
+      .forEach((movie) => this.#renderMovie(movie));
+  };
+
+  #clearMovieList = () => {
+    this.#moviePresenter.forEach((presenter) => presenter.destroy());
+    this.#moviePresenter.clear();
+    this.#renderedMovieCount = MOVIE_COUNT_PER_STEP;
+    remove(this.#showMoreButtonComponent);
+  };
+
+
+  #renderMoviesList = () => {
     if (this.#pageMovies.length > 0) {
       for (let i = 0; i < Math.min(this.#pageMovies.length, MOVIE_COUNT_PER_STEP); i++) {
         this.#renderMovie(this.#pageMovies[i]);
@@ -38,49 +80,24 @@ export default class PagePresenter {
     }
 
     if (this.#pageMovies.length > MOVIE_COUNT_PER_STEP) {
-      render(this.#showMoreButtonComponent, this.#filmsComponent.filmsList);
-      this.#showMoreButtonComponent.setClickHandler(this.#handleShowMoreButtonClick);
+      this.#renderShowMoreButton();
     }
-
-    const onEscKeyDown = (evt) => {
-      if (evt.key === 'Escape' || evt.key === 'Esc') {
-        evt.preventDefault();
-        hidePopup();
-        document.removeEventListener('keydown', onEscKeyDown);
-      }
-    };
-
-    const showPopup = (evt) => {
-      const filmCard = evt.target.closest('.film-card__link');
-      if (filmCard) {
-        const movieId = filmCard.dataset.id;
-        document.body.appendChild(this.#popupComponent(this.#pageMovies[movieId]).element);
-        document.body.classList.add('hide-overflow');
-        document.addEventListener('keydown', onEscKeyDown);
-      }
-    };
-
-    function hidePopup() {
-      document.body.querySelector('.film-details').remove();
-      document.body.classList.remove('hide-overflow');
-    }
-
-    this.#filmsComponent.setClickHandler((evt) => {
-      showPopup(evt);
-      document.body.querySelector('.film-details__close-btn').addEventListener('click', hidePopup);
-    });
-
   };
 
-  #renderMovie = (movie) => {
-    const movieComponent = new FilmView(movie);
-    render(movieComponent, this.#filmsComponent.filmsListContainer);
+  #renderShowMoreButton = () => {
+    render(this.#showMoreButtonComponent, this.#filmsComponent.filmsList);
+    this.#showMoreButtonComponent.setClickHandler(this.#handleShowMoreButtonClick);
+  };
+
+  #renderPage = () => {
+    this.#renderMoviesList();
+    this.#renderFilter();
+    this.#renderSort();
+    render(this.#filmsComponent, this.#pageContainer);
   };
 
   #handleShowMoreButtonClick = () => {
-    this.#pageMovies
-      .slice(this.#renderedMovieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP)
-      .forEach((movie) => this.#renderMovie(movie));
+    this.#renderMovies(this.#renderedMovieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP);
 
     this.#renderedMovieCount += MOVIE_COUNT_PER_STEP;
 
@@ -89,3 +106,4 @@ export default class PagePresenter {
     }
   };
 }
+
