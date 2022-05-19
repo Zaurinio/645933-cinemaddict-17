@@ -1,6 +1,8 @@
+import { nanoid } from 'nanoid';
+
 export const generateMovie = () => (
   {
-    id: 0,
+    id: nanoid(),
     filmCommentsId: [
       0, 1, 2, 3, 4
     ],
@@ -27,5 +29,11 @@ export const generateMovie = () => (
       ],
       description: 'Oscar-winning film, a war drama about two young people, from the creators of timeless classic Nu, Pogodi! and Alice in Wonderland, with the best fight scenes since Bruce Lee.'
     },
+    userDetails: {
+      watchlist: false,
+      alreadyWatched: true,
+      watchingDate: '2019-04-12T16:12:32.554Z',
+      favorite: false
+    }
   }
 );
