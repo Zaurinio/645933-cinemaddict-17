@@ -34,6 +34,6 @@ export const generateMovie = () => (
       alreadyWatched: true,
       watchingDate: '2019-04-12T16:12:32.554Z',
       favorite: false
-    }
+    },
   }
 );
