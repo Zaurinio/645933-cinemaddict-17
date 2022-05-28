@@ -46,8 +46,9 @@ export default class MoviePresenter {
     }
 
     if (this.#mode === Mode.OPENED && prevMovieComponent) {
-      this.createPopup();
-      replace(this.#popupComponent, prevPopupComponent);
+      // this.createPopup();
+      // replace(this.#popupComponent, prevPopupComponent);
+
     }
   };
 

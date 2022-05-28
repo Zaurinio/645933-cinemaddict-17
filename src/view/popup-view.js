@@ -5,7 +5,7 @@ import { humanizeCommentDate } from '../utils/dates.js';
 import { allComments } from '../mock/comments.js';
 
 const createPopupView = (movie) => {
-  const { title, totalRating, runtime, genre, description, ageRating, alternativeTitle, director, writers, actors } = movie.filmInfo;
+  const { title, totalRating, runtime, genre, description, ageRating, alternativeTitle, director, writers, actors, poster } = movie.filmInfo;
   const { date } = movie.filmInfo.release;
   const { filmCommentsId, newCommentEmotion, newCommentText } = movie;
   const { watchlist, alreadyWatched, favorite } = movie.userDetails;
@@ -93,7 +93,7 @@ const createPopupView = (movie) => {
                 </div>
                 <div class="film-details__info-wrap">
                   <div class="film-details__poster">
-                    <img class="film-details__poster-img" src="./images/posters/the-great-flamarion.jpg" alt="">
+                    <img class="film-details__poster-img" src="./${poster}" alt="">
 
                       <p class="film-details__age">${ageRating}+</p>
                   </div>
@@ -266,17 +266,25 @@ export default class PopupView extends AbstractStatefulView {
 
   #watchlistClickHandler = (evt) => {
     evt.preventDefault();
+    this.updateElement({
+      userDetails: { ...this._state.userDetails, watchlist: !this._state.userDetails.watchlist },
+    });
     this._callback.watchlistClick();
   };
 
   #watchedClickHandler = (evt) => {
     evt.preventDefault();
+    this.updateElement({
+      userDetails: { ...this._state.userDetails, alreadyWatched: !this._state.userDetails.alreadyWatched },
+    });
     this._callback.watchedClick();
   };
 
   #favoriteClickHandler = (evt) => {
     evt.preventDefault();
+    this.updateElement({
+      userDetails: { ...this._state.userDetails, favorite: !this._state.userDetails.favorite },
+    });
     this._callback.favoriteClick();
   };
 }
-
