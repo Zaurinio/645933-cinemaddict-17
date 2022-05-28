@@ -27,7 +27,7 @@ export default class MoviePresenter {
     this.movie = movie;
 
     const prevMovieComponent = this.#movieComponent;
-    const prevPopupComponent = this.#popupComponent;
+    // const prevPopupComponent = this.#popupComponent;
 
     this.#movieComponent = new FilmView(movie);
 
@@ -45,11 +45,11 @@ export default class MoviePresenter {
       replace(this.#movieComponent, prevMovieComponent);
     }
 
-    if (this.#mode === Mode.OPENED && prevMovieComponent) {
-      // this.createPopup();
-      // replace(this.#popupComponent, prevPopupComponent);
+    // if (this.#mode === Mode.OPENED && prevMovieComponent) {
+    //   this.createPopup();
+    //   replace(this.#popupComponent, prevPopupComponent);
 
-    }
+    // }
   };
 
   createPopup = () => {
