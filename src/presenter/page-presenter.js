@@ -111,6 +111,7 @@ export default class PagePresenter {
       case UpdateType.PATCH:
         // - обновить часть списка (например, когда поменялось описание)
         this.#moviePresenter.get(data.id).init(data);
+        this.#updateOpenedPopup();
         break;
       case UpdateType.MINOR:
         // - обновить список (например, когда задача ушла в архив)

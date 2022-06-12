@@ -1,6 +1,5 @@
 import { render, remove, replace } from '../framework/render.js';
 import FilmView from '../view/film-view.js';
-import PopupView from '../view/popup-view.js';
 import { UserAction, UpdateType } from '../const.js';
 // import commentsModel from '../model/comments-model.js';
 

@@ -1,4 +1,4 @@
-import { render, remove, replace } from '../framework/render.js';
+import { replace } from '../framework/render.js';
 import { UserAction, UpdateType } from '../const.js';
 import PopupView from '../view/popup-view.js';
 

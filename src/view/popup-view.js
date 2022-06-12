@@ -30,7 +30,7 @@ const createPopupView = (movie, movieComments) => {
   const addMovieComments = () => {
     let comments = '';
     for (let i = 0; i < filmCommentsId.length; i++) {
-      const element = movieComments.find((comment) => comment.id == filmCommentsId[i]);
+      const element = movieComments.find((comment) => comment.id === filmCommentsId[i].toString());
       const commentDate = humanizeCommentDate(element.date);
 
       comments += `<li class="film-details__comment">
@@ -207,14 +207,15 @@ export default class PopupView extends AbstractStatefulView {
     this.setWatchlistClickHandler(this._callback.watchlistClick);
     this.setWatchedlistClickHandler(this._callback.watchedClick);
     this.setFavoriteClickHandler(this._callback.favoriteClick);
+    this.setCommentSubmitHandler(this._callback.commentSubmit);
     this.setCommentDeleteHandler(this._callback.deleteComment);
   };
 
   // #newCommentHandler = (evt) => {
   //   evt.preventDefault();
-  //   // this._setState({
-  //   //   newCommentText: evt.target.value,
-  //   // });
+  //   this._setState({
+  //     newCommentText: evt.target.value,
+  //   });
   // };
 
   static parsePopupToState = (movie) => ({
