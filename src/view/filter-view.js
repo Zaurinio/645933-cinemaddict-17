@@ -1,16 +1,55 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
-const createFilterTemplate = () => (
-  `<nav class="main-navigation">
-    <a href="#all" class="main-navigation__item main-navigation__item--active">All movies</a>
-    <a href="#watchlist" class="main-navigation__item">Watchlist <span class="main-navigation__item-count">13</span></a>
-    <a href="#history" class="main-navigation__item">History <span class="main-navigation__item-count">4</span></a>
-    <a href="#favorites" class="main-navigation__item">Favorites <span class="main-navigation__item-count">8</span></a>
-  </nav>`
-);
+const createFilterItemTemplate = (filter, currentFilterType) => {
+  const { type, name, count } = filter;
+
+  return (name === 'All movies' ?
+    `<a
+  href="#${type}"
+  class="main-navigation__item ${type === currentFilterType ? 'main-navigation__item--active' : ''}"
+  data-filter-type="${type}">
+    ${name}
+  </a>`
+    : `<a
+    href="#${type}"
+    class="main-navigation__item ${type === currentFilterType ? 'main-navigation__item--active' : ''}"
+    data-filter-type="${type}">
+      ${name}
+      <span class="main-navigation__item-count">${count}</span>
+  </a>`);
+};
+
+const createFilterTemplate = (filterItems, currentFilterType) => {
+  const filterItemsTemplate = filterItems
+    .map((filter) => createFilterItemTemplate(filter, currentFilterType))
+    .join('');
+
+  return `<nav class="main-navigation">
+    ${filterItemsTemplate}
+  </nav>`;
+};
 
 export default class FilterView extends AbstractView {
-  get template() {
-    return createFilterTemplate();
+  #filters = null;
+  #currentFilter = null;
+
+  constructor(filters, currentFilterType) {
+    super();
+    this.#filters = filters;
+    this.#currentFilter = currentFilterType;
   }
+
+  get template() {
+    return createFilterTemplate(this.#filters, this.#currentFilter);
+  }
+
+  setFilterTypeChangeHandler = (callback) => {
+    this._callback.filterTypeChange = callback;
+    this.element.addEventListener('click', this.#filterTypeChangeHandler);
+  };
+
+  #filterTypeChangeHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.filterTypeChange(evt.target.dataset.filterType);
+  };
 }
