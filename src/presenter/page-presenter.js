@@ -227,11 +227,11 @@ export default class PagePresenter {
   };
 
   #updateOpenedPopup = () => {
-    this.#popupMovie = this.#popupPresenter.movie;
-    const currentMovie = this.movies.find((movie) => movie.id === this.#popupMovie.id);
-    const prevElement = this.#popupPresenter.popupComponent.element;
-    const scrollPosition = prevElement.scrollTop;
     if (this.#popupPresenter.mode === 'OPENED') {
+      this.#popupMovie = this.#popupPresenter.movie;
+      const currentMovie = this.movies.find((movie) => movie.id === this.#popupMovie.id);
+      const prevElement = this.#popupPresenter.popupComponent.element;
+      const scrollPosition = prevElement.scrollTop;
       remove(this.#popupPresenter.popupComponent);
       this.#renderPopup(currentMovie);
       const newElement = this.#popupPresenter.popupComponent.element;

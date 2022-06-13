@@ -201,7 +201,7 @@ export default class PopupView extends AbstractStatefulView {
 
   #setInnerHandlers = () => {
     this.element.querySelector('.film-details__emoji-list').addEventListener('change', this.#newEmotionHandler);
-    // this.element.querySelector('.film-details__comment-input').addEventListener('input', this.#newCommentHandler);
+    this.element.querySelector('.film-details__comment-input').addEventListener('input', this.#newCommentHandler);
 
     this.setCloseButtonClickHandler(this._callback.closeButtonclick);
     this.setWatchlistClickHandler(this._callback.watchlistClick);
@@ -211,12 +211,12 @@ export default class PopupView extends AbstractStatefulView {
     this.setCommentDeleteHandler(this._callback.deleteComment);
   };
 
-  // #newCommentHandler = (evt) => {
-  //   evt.preventDefault();
-  //   this._setState({
-  //     newCommentText: evt.target.value,
-  //   });
-  // };
+  #newCommentHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      newCommentText: evt.target.value,
+    });
+  };
 
   static parsePopupToState = (movie) => ({
     ...movie,
@@ -309,7 +309,7 @@ export default class PopupView extends AbstractStatefulView {
   };
 
   #commentSubmitHandler = (evt) => {
-    if (evt.key === 'Enter' && evt.ctrlKey) {
+    if (evt.key === 'Enter' && (evt.metaKey || evt.ctrlKey)) {
       evt.preventDefault();
 
       const newCommentId = nanoid();

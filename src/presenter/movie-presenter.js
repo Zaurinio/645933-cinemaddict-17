@@ -116,7 +116,7 @@ export default class MoviePresenter {
     // this.#changeData({ ...this.movie, userDetails: { ...this.movie.userDetails, watchlist: !this.movie.userDetails.watchlist } });
     this.#changeData(
       UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
+      UpdateType.MINOR,
       { ...this.movie, userDetails: { ...this.movie.userDetails, watchlist: !this.movie.userDetails.watchlist } },
     );
     // this.movie.userDetails.watchlist = !this.movie.userDetails.watchlist;
@@ -126,7 +126,7 @@ export default class MoviePresenter {
     // this.#changeData({ ...this.movie, userDetails: { ...this.movie.userDetails, alreadyWatched: !this.movie.userDetails.alreadyWatched } });
     this.#changeData(
       UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
+      UpdateType.MINOR,
       { ...this.movie, userDetails: { ...this.movie.userDetails, alreadyWatched: !this.movie.userDetails.alreadyWatched } },
     );
     // this.movie.userDetails.alreadyWatched = !this.movie.userDetails.alreadyWatched;
@@ -136,7 +136,7 @@ export default class MoviePresenter {
     // this.#changeData({ ...this.movie, userDetails: { ...this.movie.userDetails, favorite: !this.movie.userDetails.favorite } });
     this.#changeData(
       UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
+      UpdateType.MINOR,
       { ...this.movie, userDetails: { ...this.movie.userDetails, favorite: !this.movie.userDetails.favorite } },
     );
     // this.updateElement({
