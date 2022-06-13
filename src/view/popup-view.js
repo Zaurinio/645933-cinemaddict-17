@@ -2,9 +2,11 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { humanizePopupReleaseDate } from '../utils/dates.js';
 import { humanizeCommentDate } from '../utils/dates.js';
-import { allComments } from '../mock/comments.js';
+import { nanoid } from 'nanoid';
+import he from 'he';
+// import { allComments } from '../mock/comments.js';
 
-const createPopupView = (movie) => {
+const createPopupView = (movie, movieComments) => {
   const { title, totalRating, runtime, genre, description, ageRating, alternativeTitle, director, writers, actors, poster } = movie.filmInfo;
   const { date } = movie.filmInfo.release;
   const { filmCommentsId, newCommentEmotion, newCommentText } = movie;
@@ -28,7 +30,7 @@ const createPopupView = (movie) => {
   const addMovieComments = () => {
     let comments = '';
     for (let i = 0; i < filmCommentsId.length; i++) {
-      const element = allComments.find((comment) => Number(comment.id) === filmCommentsId[i]);
+      const element = movieComments.find((comment) => comment.id === filmCommentsId[i].toString());
       const commentDate = humanizeCommentDate(element.date);
 
       comments += `<li class="film-details__comment">
@@ -36,11 +38,11 @@ const createPopupView = (movie) => {
                       <img src="./images/emoji/${element.emotion}.png" width="55" height="55" alt="emoji-${element.emotion}">
                     </span>
                     <div>
-                      <p class="film-details__comment-text">${element.comment}</p>
+                      <p class="film-details__comment-text">${he.encode(element.comment)}</p>
                       <p class="film-details__comment-info">
                         <span class="film-details__comment-author">${element.author}</span>
                         <span class="film-details__comment-day">${commentDate}</span>
-                        <button class="film-details__comment-delete">Delete</button>
+                        <button type="button" class="film-details__comment-delete">Delete</button>
                       </p>
                     </div>
                   </li>`;
@@ -157,7 +159,7 @@ const createPopupView = (movie) => {
 
               <div class="film-details__bottom-container">
                 <section class="film-details__comments-wrap">
-                  <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">4</span></h3>
+                  <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${filmCommentsId.length}</span></h3>
 
                   <ul class="film-details__comments-list">
                     ${addMovieComments()}
@@ -171,16 +173,18 @@ const createPopupView = (movie) => {
 };
 
 export default class PopupView extends AbstractStatefulView {
+  #commentsModel = null;
 
-  constructor(movie) {
+  constructor(movie, comments) {
     super();
     this._state = PopupView.parsePopupToState(movie);
+    this.#commentsModel = comments;
 
     this.#setInnerHandlers();
   }
 
   get template() {
-    return createPopupView(this._state);
+    return createPopupView(this._state, this.#commentsModel.commentsList);
   }
 
   _restoreHandlers = () => {
@@ -203,6 +207,8 @@ export default class PopupView extends AbstractStatefulView {
     this.setWatchlistClickHandler(this._callback.watchlistClick);
     this.setWatchedlistClickHandler(this._callback.watchedClick);
     this.setFavoriteClickHandler(this._callback.favoriteClick);
+    this.setCommentSubmitHandler(this._callback.commentSubmit);
+    this.setCommentDeleteHandler(this._callback.deleteComment);
   };
 
   #newCommentHandler = (evt) => {
@@ -264,6 +270,20 @@ export default class PopupView extends AbstractStatefulView {
     this.element.querySelector('.film-details__control-button--favorite').addEventListener('click', this.#favoriteClickHandler);
   };
 
+  setCommentSubmitHandler = (callback) => {
+    this._callback.commentSubmit = callback;
+    this.element.querySelector('.film-details__comment-input').addEventListener('keydown', this.#commentSubmitHandler);
+  };
+
+  removeCommentSubmitHandler = () => {
+    this.element.querySelector('.film-details__comment-input').removeEventListener('keydown', this.#commentSubmitHandler);
+  };
+
+  setCommentDeleteHandler = (callback) => {
+    this._callback.deleteComment = callback;
+    this.element.querySelectorAll('.film-details__comment-delete').forEach((button) => button.addEventListener('click', this.#deleteButtonCLickHandler));
+  };
+
   #watchlistClickHandler = (evt) => {
     evt.preventDefault();
     this.updateElement({
@@ -286,5 +306,41 @@ export default class PopupView extends AbstractStatefulView {
       userDetails: { ...this._state.userDetails, favorite: !this._state.userDetails.favorite },
     });
     this._callback.favoriteClick();
+  };
+
+  #commentSubmitHandler = (evt) => {
+    if (evt.key === 'Enter' && (evt.metaKey || evt.ctrlKey)) {
+      evt.preventDefault();
+
+      const newCommentId = nanoid();
+
+      this._state.newCommentText = evt.target.value;
+
+      this._callback.commentSubmit(this._state.newCommentText, this._state.newCommentEmotion, newCommentId);
+
+      this.updateElement({
+        ...this._state, filmCommentsId: [...this._state.filmCommentsId, newCommentId]
+      }
+      );
+    }
+  };
+
+  #deleteButtonCLickHandler = (evt) => {
+    evt.preventDefault();
+    const commentsList = [...evt.target.closest('.film-details__comments-list').children];
+
+    const commentIndex = commentsList.findIndex((elem) => elem === evt.target.closest('.film-details__comment'));
+
+    const commentsIdList = [
+      ...this._state.filmCommentsId.slice(0, commentIndex),
+      ...this._state.filmCommentsId.slice(commentIndex + 1),
+    ];
+
+    this._callback.deleteComment(commentIndex, commentsIdList);
+
+    this.updateElement({
+      ...this._state, filmCommentsId: [...commentsIdList]
+    }
+    );
   };
 }
