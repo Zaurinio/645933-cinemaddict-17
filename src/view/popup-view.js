@@ -1,17 +1,14 @@
-// import AbstractView from '../framework/view/abstract-view.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { humanizePopupReleaseDate } from '../utils/dates.js';
 import { humanizeCommentDate } from '../utils/dates.js';
 import { nanoid } from 'nanoid';
 import he from 'he';
-// import { allComments } from '../mock/comments.js';
 
 const createPopupView = (movie, movieComments) => {
-  const { title, totalRating, runtime, genre, description, ageRating, alternativeTitle, director, writers, actors, poster } = movie.filmInfo;
-  const { date } = movie.filmInfo.release;
-  const { filmCommentsId, newCommentEmotion, newCommentText } = movie;
-  const { watchlist, alreadyWatched, favorite } = movie.userDetails;
+  const { title, totalRating, runtime, genres, description, watchlist, alreadyWatched, favorite, date, ageRating, alternativeTitle, director, writers, actors, poster, releaseCountry, comments } = movie;
   const releaseDate = humanizePopupReleaseDate(date);
+  const newCommentEmotion = 'smile';
+  const newCommentText = 'Great movie!';
 
   const runtimeHours = Math.trunc(Number(runtime) / 60);
   const runtimeMinutes = Number(runtime) % 60;
@@ -19,8 +16,8 @@ const createPopupView = (movie, movieComments) => {
   const addMovieGenres = () => {
     let element = '';
 
-    for (let i = 0; i < genre.length; i++) {
-      element += `<span class="film-details__genre">${genre[i]}</span>`;
+    for (let i = 0; i < genres.length; i++) {
+      element += `<span class="film-details__genre">${genres[i]}</span>`;
     }
 
     return element;
@@ -28,12 +25,12 @@ const createPopupView = (movie, movieComments) => {
 
 
   const addMovieComments = () => {
-    let comments = '';
-    for (let i = 0; i < filmCommentsId.length; i++) {
-      const element = movieComments.find((comment) => comment.id === filmCommentsId[i].toString());
+    let commentsElement = '';
+    for (let i = 0; i < comments.length; i++) {
+      const element = movieComments.find((comment) => comment.id === comments[i]);
       const commentDate = humanizeCommentDate(element.date);
 
-      comments += `<li class="film-details__comment">
+      commentsElement += `<li class="film-details__comment">
                     <span class="film-details__comment-emoji">
                       <img src="./images/emoji/${element.emotion}.png" width="55" height="55" alt="emoji-${element.emotion}">
                     </span>
@@ -48,7 +45,7 @@ const createPopupView = (movie, movieComments) => {
                   </li>`;
     }
 
-    return comments;
+    return commentsElement;
   };
 
   const addNewMovieComment = () => (
@@ -135,7 +132,7 @@ const createPopupView = (movie, movieComments) => {
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Country</td>
-                        <td class="film-details__cell">USA</td>
+                        <td class="film-details__cell">${releaseCountry}</td>
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Genres</td>
@@ -159,7 +156,7 @@ const createPopupView = (movie, movieComments) => {
 
               <div class="film-details__bottom-container">
                 <section class="film-details__comments-wrap">
-                  <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${filmCommentsId.length}</span></h3>
+                  <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${comments.length}</span></h3>
 
                   <ul class="film-details__comments-list">
                     ${addMovieComments()}
@@ -184,7 +181,7 @@ export default class PopupView extends AbstractStatefulView {
   }
 
   get template() {
-    return createPopupView(this._state, this.#commentsModel.commentsList);
+    return createPopupView(this._state, this.#commentsModel);
   }
 
   _restoreHandlers = () => {
@@ -233,18 +230,6 @@ export default class PopupView extends AbstractStatefulView {
     return movie;
   };
 
-  // setFormSubmitHandler = (callback) => {
-  //   this._callback.formSubmit = callback;
-  //   document.addEventListener('keydown', this.#formSubmitHandler);
-  // };
-
-  // #formSubmitHandler = (evt) => {
-  //   evt.preventDefault();
-  //   if (evt.ctrlKey && evt.key === 'Enter') {
-  //     this._callback.formSubmit(PopupView.parseStatetoPopup(this._state));
-  //   }
-  // };
-
   setCloseButtonClickHandler = (callback) => {
     this._callback.closeButtonclick = callback;
     this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#closeButtonClickHandler);
@@ -287,7 +272,7 @@ export default class PopupView extends AbstractStatefulView {
   #watchlistClickHandler = (evt) => {
     evt.preventDefault();
     this.updateElement({
-      userDetails: { ...this._state.userDetails, watchlist: !this._state.userDetails.watchlist },
+      ...this._state, watchlist: !this._state.watchlist
     });
     this._callback.watchlistClick();
   };
@@ -295,7 +280,7 @@ export default class PopupView extends AbstractStatefulView {
   #watchedClickHandler = (evt) => {
     evt.preventDefault();
     this.updateElement({
-      userDetails: { ...this._state.userDetails, alreadyWatched: !this._state.userDetails.alreadyWatched },
+      ...this._state, alreadyWatched: !this._state.alreadyWatched
     });
     this._callback.watchedClick();
   };
@@ -303,7 +288,7 @@ export default class PopupView extends AbstractStatefulView {
   #favoriteClickHandler = (evt) => {
     evt.preventDefault();
     this.updateElement({
-      userDetails: { ...this._state.userDetails, favorite: !this._state.userDetails.favorite },
+      ...this._state, favorite: !this._state.favorite
     });
     this._callback.favoriteClick();
   };

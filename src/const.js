@@ -8,12 +8,13 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
 };
 
 const FilterType = {
   ALL: 'all',
   WATCHLIST: 'watchlist',
-  HISTORY: 'history',
+  HISTORY: 'alreadyWatched',
   FAVORITES: 'favorites',
 };
 
