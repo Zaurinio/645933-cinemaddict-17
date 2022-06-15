@@ -1,6 +1,8 @@
 import { replace } from '../framework/render.js';
 import { UserAction, UpdateType } from '../const.js';
 import PopupView from '../view/popup-view.js';
+import LoadingView from '../view/loading-view.js';
+import { remove } from '../framework/render.js';
 
 const Mode = {
   CLOSED: 'CLOSED',
@@ -14,18 +16,39 @@ export default class PopupPresenter {
   #changeData = null;
   #commentsModel = null;
   movie = null;
+  comments = [];
+  #isLoading = true;
+  #loadingComponent = new LoadingView();
+
 
   constructor(changeData, commentsModel) {
     this.#changeData = changeData;
     this.#commentsModel = commentsModel;
 
-
-    // this.#changeMode = changeMode;
+    this.#commentsModel.addObserver(this.#handlePresenterEvent);
   }
+
+  #handlePresenterEvent = (updateType) => {
+    switch (updateType) {
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.renderPopup();
+        break;
+    }
+  };
 
   #createPopup = () => {
 
-    this.popupComponent = new PopupView(this.movie, this.#commentsModel);
+    // if (this.#isLoading) {
+    //   this.#renderLoading();
+    //   return;
+    // }
+
+    this.comments = this.#commentsModel.commentsList;
+
+
+    this.popupComponent = new PopupView(this.movie, this.comments);
 
     const prevPopupComponent = this.popupComponent;
 
@@ -38,23 +61,25 @@ export default class PopupPresenter {
     this.popupComponent.setCloseButtonClickHandler(this.#hidePopup);
 
     if (this.mode === Mode.OPENED) {
-      // this.createPopup();
       replace(this.popupComponent, prevPopupComponent);
     }
   };
 
-  // resetView = () => {
-  //   if (this.#mode !== Mode.CLOSED) {
-  //     this.#hidePopup();
-  //     this.#mode = Mode.CLOSED;
-  //   }
+  // #renderLoading = () => {
+  //   render(this.#loadingComponent, this.popupComponent.element, RenderPosition.AFTERBEGIN);
+  //   console.log('loading');
   // };
 
   showPopup = (movie) => {
     this.movie = movie;
 
+    this.#commentsModel.init(this.movie);
+
+  };
+
+  renderPopup = () => {
     this.#createPopup();
-    // this.#changeMode();
+
     document.body.appendChild(this.popupComponent.element);
 
     document.body.classList.add('hide-overflow');
@@ -79,35 +104,27 @@ export default class PopupPresenter {
   };
 
   #handleWatchlistClick = () => {
-    // this.#changeData({ ...this.movie, userDetails: { ...this.movie.userDetails, watchlist: !this.movie.userDetails.watchlist } });
     this.#changeData(
       UserAction.UPDATE_FILM,
       UpdateType.MINOR,
-      { ...this.movie, userDetails: { ...this.movie.userDetails, watchlist: !this.movie.userDetails.watchlist } },
+      { ...this.movie, watchlist: !this.movie.watchlist },
     );
-    // this.movie.userDetails.watchlist = !this.movie.userDetails.watchlist;
   };
 
   #handleWatchedClick = () => {
-    // this.#changeData({ ...this.movie, userDetails: { ...this.movie.userDetails, alreadyWatched: !this.movie.userDetails.alreadyWatched } });
     this.#changeData(
       UserAction.UPDATE_FILM,
       UpdateType.MINOR,
-      { ...this.movie, userDetails: { ...this.movie.userDetails, alreadyWatched: !this.movie.userDetails.alreadyWatched } },
+      { ...this.movie, alreadyWatched: !this.movie.alreadyWatched },
     );
-    // this.movie.userDetails.alreadyWatched = !this.movie.userDetails.alreadyWatched;
   };
 
   #handleFavoriteClick = () => {
-    // this.#changeData({ ...this.movie, userDetails: { ...this.movie.userDetails, favorite: !this.movie.userDetails.favorite } });
     this.#changeData(
       UserAction.UPDATE_FILM,
       UpdateType.MINOR,
-      { ...this.movie, userDetails: { ...this.movie.userDetails, favorite: !this.movie.userDetails.favorite } },
+      { ...this.movie, favorite: !this.movie.favorite },
     );
-    // this.updateElement({
-    //   userDetails: { ...this._state.userDetails, favorite: !this._state.userDetails.favorite },
-    // });
   };
 
   #handleCommentSubmit = (newComment, newEmotion, newCommentId) => {
@@ -138,8 +155,5 @@ export default class PopupPresenter {
       UpdateType.MINOR,
       { ...this.movie, filmCommentsId: idList },
     );
-
-
   };
-
 }
