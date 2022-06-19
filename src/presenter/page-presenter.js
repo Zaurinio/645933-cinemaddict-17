@@ -101,9 +101,9 @@ export default class PagePresenter {
         } catch (err) {
           this.#popupPresenter.setAborting();
         }
-        finally {
-          this.#popupPresenter.setCommentSending(false);
-        }
+        // finally {
+        //   this.#popupPresenter.setCommentSending(false);
+        // }
         break;
       case UserAction.DELETE_COMMENT:
         this.#popupPresenter.setCommentDeleting();
@@ -114,9 +114,9 @@ export default class PagePresenter {
         } catch (err) {
           this.#popupPresenter.setAborting();
         }
-        finally {
-          this.#popupPresenter.setCommentDeleting(false, false);
-        }
+        // finally {
+        //   this.#popupPresenter.setCommentDeleting(false, false);
+        // }
         break;
     }
     this.#uiBlocker.unblock();
