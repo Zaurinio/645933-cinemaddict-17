@@ -25,15 +25,14 @@ export default class PagePresenter {
   #filterModel = null;
   #commentsModel = null;
   #popupPresenter = null;
+  #sortComponent = null;
   #loadingComponent = new LoadingView();
+  #currentSortType = SortType.DEFAULT;
 
-  #renderedMovieCount = MOVIE_COUNT_PER_STEP;
   #showMoreButtonComponent = null;
   #emptyPageComponent = new EmptyPageView();
-  #sortComponent = new SortView();
   #moviePresenter = new Map();
   #popupMovie = null;
-  #currentSortType = SortType.DEFAULT;
   #isLoading = true;
   #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
 
@@ -79,10 +78,6 @@ export default class PagePresenter {
     this.#renderPage();
   };
 
-  #handleModeChange = () => {
-    this.#moviePresenter.forEach((presenter) => presenter.resetView());
-  };
-
   #handleViewAction = async (actionType, updateType, update) => {
     this.#uiBlocker.block();
     switch (actionType) {
@@ -101,9 +96,6 @@ export default class PagePresenter {
         } catch (err) {
           this.#popupPresenter.setAborting();
         }
-        // finally {
-        //   this.#popupPresenter.setCommentSending(false);
-        // }
         break;
       case UserAction.DELETE_COMMENT:
         this.#popupPresenter.setCommentDeleting();
@@ -114,9 +106,6 @@ export default class PagePresenter {
         } catch (err) {
           this.#popupPresenter.setAborting();
         }
-        // finally {
-        //   this.#popupPresenter.setCommentDeleting(false, false);
-        // }
         break;
     }
     this.#uiBlocker.unblock();
@@ -147,6 +136,7 @@ export default class PagePresenter {
 
 
   #renderSort = () => {
+    this.#sortComponent = new SortView(this.#currentSortType);
     this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
     render(this.#sortComponent, this.#pageContainer);
   };
@@ -180,21 +170,6 @@ export default class PagePresenter {
 
   #renderNoMovies = () => {
     render(this.#emptyPageComponent, this.#filmsComponent.element);
-  };
-
-  #renderMoviesList = () => {
-    const moviesCount = this.movies.length;
-    const movies = this.movies.slice(0, Math.min(moviesCount, MOVIE_COUNT_PER_STEP));
-
-    if (moviesCount > 0) {
-      this.#renderMovies(movies);
-    } else {
-      render(this.#emptyPageComponent, this.#filmsComponent.element);
-    }
-
-    if (moviesCount > MOVIE_COUNT_PER_STEP) {
-      this.#renderShowMoreButton();
-    }
   };
 
   #renderShowMoreButton = () => {
@@ -235,8 +210,10 @@ export default class PagePresenter {
   };
 
   #renderPage = () => {
+    if (this.movies.length) {
+      this.#renderSort();
+    }
 
-    this.#renderSort();
     render(this.#filmsComponent, this.#pageContainer);
 
     if (this.#isLoading) {
@@ -263,12 +240,14 @@ export default class PagePresenter {
   #handleShowMoreButtonClick = () => {
     const movieCount = this.movies.length;
 
-    const newRenderedMovieCount = Math.min(movieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP);
-    const movies = this.movies.slice(this.#renderedMovieCount, newRenderedMovieCount);
+    const newRenderedMovieCount = Math.min(movieCount, this.#renderedMoviesCount + MOVIE_COUNT_PER_STEP);
+    const movies = this.movies.slice(this.#renderedMoviesCount, newRenderedMovieCount);
+
 
     this.#renderMovies(movies);
+    this.#renderedMoviesCount = newRenderedMovieCount;
 
-    if (this.#renderedMovieCount >= movieCount) {
+    if (this.#renderedMoviesCount >= movieCount) {
       remove(this.#showMoreButtonComponent);
     }
   };

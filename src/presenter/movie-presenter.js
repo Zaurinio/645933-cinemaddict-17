@@ -2,19 +2,10 @@ import { render, remove, replace } from '../framework/render.js';
 import FilmView from '../view/film-view.js';
 import { UserAction, UpdateType } from '../const.js';
 
-const Mode = {
-  CLOSED: 'CLOSED',
-  OPENED: 'OPENED',
-};
-
 export default class MoviePresenter {
   #movieComponent = null;
   #filmsListContainer = null;
-  #popupComponent = null;
   #changeData = null;
-  #mode = Mode.CLOSED;
-  #commentsModel = null;
-  #comments = [];
   #popupCallback = null;
 
 

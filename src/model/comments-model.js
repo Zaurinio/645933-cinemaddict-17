@@ -50,12 +50,4 @@ export default class СommentsModel extends Observable {
       throw new Error('Can\'t delete comment');
     }
   };
-
-  // #adaptToClient = (comments) => ({
-  //   author: comments.author,
-  //   comment: comments.comment,
-  //   date: new Date(comments.date),
-  //   emotion: comments.emotion,
-  //   id: comments.id,
-  // });
 }

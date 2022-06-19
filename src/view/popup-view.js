@@ -303,17 +303,9 @@ export default class PopupView extends AbstractStatefulView {
     if (evt.key === 'Enter' && (evt.metaKey || evt.ctrlKey)) {
       evt.preventDefault();
 
-      // const newCommentId = nanoid();
-
       this._state.newCommentText = evt.target.value;
 
       this._callback.commentSubmit(this._state.newCommentText, this._state.newCommentEmotion);
-
-      // this.updateElement({
-      //   // ...this._state, filmCommentsId: [...this._state.filmCommentsId, newCommentId]
-      //   ...this._state
-      // }
-      // );
     }
   };
 
