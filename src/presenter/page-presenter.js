@@ -1,5 +1,4 @@
 import FilmsView from '../view/films-view.js';
-// import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import EmptyPageView from '../view/empty-page-view.js';
@@ -11,8 +10,13 @@ import { filter } from '../utils/filter.js';
 import { sortFilmsByRating, sortFilmsByDate } from '../utils/movie.js';
 import { SortType } from '../const.js';
 import LoadingView from '../view/loading-view.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 
 const MOVIE_COUNT_PER_STEP = 5;
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class PagePresenter {
   #filmsComponent = new FilmsView();
@@ -31,6 +35,7 @@ export default class PagePresenter {
   #popupMovie = null;
   #currentSortType = SortType.DEFAULT;
   #isLoading = true;
+  #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
 
   #renderedMoviesCount = MOVIE_COUNT_PER_STEP;
 
@@ -65,6 +70,11 @@ export default class PagePresenter {
     return filteredMovies;
   }
 
+  get unfilteredMovies() {
+    const unfilteredMovies = this.#moviesModel.movies;
+    return unfilteredMovies;
+  }
+
   init = () => {
     this.#renderPage();
   };
@@ -73,18 +83,43 @@ export default class PagePresenter {
     this.#moviePresenter.forEach((presenter) => presenter.resetView());
   };
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
     switch (actionType) {
       case UserAction.UPDATE_FILM:
-        this.#moviesModel.updateFilm(updateType, update);
+        try {
+          await this.#moviesModel.updateFilm(updateType, update);
+        } catch (err) {
+          this.#popupPresenter.setAborting();
+        }
         break;
       case UserAction.ADD_COMMENT:
-        this.#commentsModel.addComment(updateType, update);
+        this.#popupPresenter.setCommentSending();
+        try {
+          await this.#commentsModel.addComment(updateType, update);
+          await this.#moviesModel.updateFilm(updateType, update.movie);
+        } catch (err) {
+          this.#popupPresenter.setAborting();
+        }
+        // finally {
+        //   this.#popupPresenter.setCommentSending(false);
+        // }
         break;
       case UserAction.DELETE_COMMENT:
-        this.#commentsModel.deleteComment(updateType, update);
+        this.#popupPresenter.setCommentDeleting();
+
+        try {
+          await this.#commentsModel.deleteComment(updateType, update);
+          await this.#moviesModel.updateFilm(updateType, update.movie);
+        } catch (err) {
+          this.#popupPresenter.setAborting();
+        }
+        // finally {
+        //   this.#popupPresenter.setCommentDeleting(false, false);
+        // }
         break;
     }
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
@@ -189,7 +224,7 @@ export default class PagePresenter {
   #updateOpenedPopup = () => {
     if (this.#popupPresenter.mode === 'OPENED') {
       this.#popupMovie = this.#popupPresenter.movie;
-      const currentMovie = this.movies.find((movie) => movie.id === this.#popupMovie.id);
+      const currentMovie = this.unfilteredMovies.find((movie) => movie.id === this.#popupMovie.id);
       const prevElement = this.#popupPresenter.popupComponent.element;
       const scrollPosition = prevElement.scrollTop;
       remove(this.#popupPresenter.popupComponent);

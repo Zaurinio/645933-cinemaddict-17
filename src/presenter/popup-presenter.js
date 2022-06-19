@@ -19,6 +19,7 @@ export default class PopupPresenter {
   comments = [];
   #isLoading = true;
   #loadingComponent = new LoadingView();
+  popupTemplate = null;
 
 
   constructor(changeData, commentsModel) {
@@ -39,14 +40,7 @@ export default class PopupPresenter {
   };
 
   #createPopup = () => {
-
-    // if (this.#isLoading) {
-    //   this.#renderLoading();
-    //   return;
-    // }
-
     this.comments = this.#commentsModel.commentsList;
-
 
     this.popupComponent = new PopupView(this.movie, this.comments);
 
@@ -65,22 +59,17 @@ export default class PopupPresenter {
     }
   };
 
-  // #renderLoading = () => {
-  //   render(this.#loadingComponent, this.popupComponent.element, RenderPosition.AFTERBEGIN);
-  //   console.log('loading');
-  // };
-
   showPopup = (movie) => {
     this.movie = movie;
 
     this.#commentsModel.init(this.movie);
-
   };
 
   renderPopup = () => {
     this.#createPopup();
 
     document.body.appendChild(this.popupComponent.element);
+    this.popupTemplate = this.popupComponent.element;
 
     document.body.classList.add('hide-overflow');
     document.addEventListener('keydown', this.#escKeyDownHandler);
@@ -127,33 +116,56 @@ export default class PopupPresenter {
     );
   };
 
-  #handleCommentSubmit = (newComment, newEmotion, newCommentId) => {
+  #handleCommentSubmit = (newComment, newEmotion) => {
 
     this.#changeData(
       UserAction.ADD_COMMENT,
-      '',
-      { id: newCommentId, author: 'Vasya', comment: newComment, date: '2019-05-02T16:12:32.554Z', emotion: newEmotion }
-    );
-
-    this.#changeData(
-      UserAction.UPDATE_FILM,
-      UpdateType.MINOR,
-      { ...this.movie, filmCommentsId: [...this.movie.filmCommentsId, newCommentId] },
+      UpdateType.PATCH,
+      {
+        movie: this.movie,
+        comment: {
+          comment: newComment,
+          emotion: newEmotion,
+        }
+      }
     );
   };
 
-  #handleDeleteButtonClick = (index, idList) => {
-
+  #handleDeleteButtonClick = (index) => {
     this.#changeData(
       UserAction.DELETE_COMMENT,
-      '',
-      index,
-    );
-
-    this.#changeData(
-      UserAction.UPDATE_FILM,
       UpdateType.MINOR,
-      { ...this.movie, filmCommentsId: idList },
+      {
+        movie: this.movie,
+        index: index,
+      }
     );
+  };
+
+  setCommentDeleting = (isDisabled = true, isDeleting = true) => {
+    this.popupComponent.updateElement({
+      isDisabled,
+      isDeleting
+    });
+  };
+
+  setCommentSending = (isSaving = true) => {
+    this.popupComponent.updateElement({
+      isSaving
+    });
+  };
+
+  setAborting = () => {
+    const popupElement = this.popupComponent.element.querySelector('.film-details__inner');
+
+    const resetFormState = () => {
+      this.popupComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.popupComponent.shake(popupElement, resetFormState);
   };
 }
