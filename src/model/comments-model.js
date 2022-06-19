@@ -24,23 +24,38 @@ export default class СommentsModel extends Observable {
     this._notify(UpdateType.INIT);
   };
 
-  addComment = (updateType, update) => {
-
-    this.#comments = [
-      ...this.#comments,
-      update,
-    ];
-
-    this._notify(updateType, update);
+  addComment = async (updateType, update) => {
+    const { movie, comment } = update;
+    try {
+      const response = await this.#commentsApiService.addComment(movie, comment);
+      this.#comments = response.comments;
+      const updatedMovie = response.movie;
+      this._notify(updateType, updatedMovie);
+    } catch (err) {
+      throw new Error('Can\'t add comment');
+    }
   };
 
-  deleteComment = (updateType, update) => {
-
-    this.#comments = [
-      ...this.#comments.slice(0, update),
-      ...this.#comments.slice(update + 1),
-    ];
-
-    this._notify(updateType, update);
+  deleteComment = async (updateType, update) => {
+    const { index } = update;
+    const { comments } = update.movie;
+    try {
+      await this.#commentsApiService.deleteComment(comments[index]);
+      this.#comments = [
+        ...this.#comments.slice(0, index),
+        ...this.#comments.slice(index + 1),
+      ];
+      this._notify(updateType, update.movie);
+    } catch (err) {
+      throw new Error('Can\'t delete comment');
+    }
   };
+
+  // #adaptToClient = (comments) => ({
+  //   author: comments.author,
+  //   comment: comments.comment,
+  //   date: new Date(comments.date),
+  //   emotion: comments.emotion,
+  //   id: comments.id,
+  // });
 }
