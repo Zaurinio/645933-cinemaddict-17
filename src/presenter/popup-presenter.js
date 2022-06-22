@@ -17,10 +17,9 @@ export default class PopupPresenter {
   #commentsModel = null;
   movie = null;
   comments = [];
-  #isLoading = true;
+  isLoading = true;
   #loadingComponent = new LoadingView();
   popupTemplate = null;
-
 
   constructor(changeData, commentsModel) {
     this.#changeData = changeData;
@@ -32,7 +31,7 @@ export default class PopupPresenter {
   #handlePresenterEvent = (updateType) => {
     switch (updateType) {
       case UpdateType.INIT:
-        this.#isLoading = false;
+        this.isLoading = false;
         remove(this.#loadingComponent);
         this.renderPopup();
         break;
@@ -43,6 +42,9 @@ export default class PopupPresenter {
     this.comments = this.#commentsModel.commentsList;
 
     this.popupComponent = new PopupView(this.movie, this.comments);
+
+    const newElement = this.popupComponent.element;
+    newElement.scrollTop = this.scrollPosition;
 
     const prevPopupComponent = this.popupComponent;
 

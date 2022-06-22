@@ -1,4 +1,4 @@
-import ProfileView from './view/user-profile-view.js';
+import UserProfileView from './view/user-profile-view.js';
 import FilmsQuantityView from './view/films-quantity-view.js';
 import PagePresenter from './presenter/page-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
@@ -22,7 +22,7 @@ const filterPresenter = new FilterPresenter(siteMainElement, filterModel, movies
 const pagePresenter = new PagePresenter(siteMainElement, moviesModel, filterModel, commentsModel);
 
 
-render(new ProfileView(), headerMainElement);
+render(new UserProfileView(), headerMainElement);
 render(new FilmsQuantityView(), footerStatisticsElement);
 
 filterPresenter.init();

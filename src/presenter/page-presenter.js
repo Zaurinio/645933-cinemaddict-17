@@ -5,7 +5,7 @@ import EmptyPageView from '../view/empty-page-view.js';
 import { render, remove, RenderPosition } from '../framework/render.js';
 import MoviePresenter from './movie-presenter';
 import PopupPresenter from './popup-presenter';
-import { UserAction, UpdateType } from '../const.js';
+import { UserAction, UpdateType, FilterType } from '../const.js';
 import { filter } from '../utils/filter.js';
 import { sortFilmsByRating, sortFilmsByDate } from '../utils/movie.js';
 import { SortType } from '../const.js';
@@ -28,9 +28,10 @@ export default class PagePresenter {
   #sortComponent = null;
   #loadingComponent = new LoadingView();
   #currentSortType = SortType.DEFAULT;
+  #currentFilterType = FilterType.ALL;
 
   #showMoreButtonComponent = null;
-  #emptyPageComponent = new EmptyPageView();
+  #emptyPageComponent = null;
   #moviePresenter = new Map();
   #popupMovie = null;
   #isLoading = true;
@@ -55,9 +56,13 @@ export default class PagePresenter {
 
 
   get movies() {
-    const filterType = this.#filterModel.filter;
+    if (this.#currentFilterType !== this.#filterModel.filter) {
+      this.#currentSortType = SortType.DEFAULT;
+    }
+
+    this.#currentFilterType = this.#filterModel.filter;
     const movies = this.#moviesModel.movies;
-    const filteredMovies = filter[filterType](movies);
+    const filteredMovies = filter[this.#currentFilterType](movies);
 
     switch (this.#currentSortType) {
       case SortType.BY_RATING:
@@ -169,6 +174,7 @@ export default class PagePresenter {
   };
 
   #renderNoMovies = () => {
+    this.#emptyPageComponent = new EmptyPageView(this.#currentFilterType);
     render(this.#emptyPageComponent, this.#filmsComponent.element);
   };
 
