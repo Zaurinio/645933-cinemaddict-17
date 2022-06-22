@@ -43,9 +43,6 @@ export default class PopupPresenter {
 
     this.popupComponent = new PopupView(this.movie, this.comments);
 
-    const newElement = this.popupComponent.element;
-    newElement.scrollTop = this.scrollPosition;
-
     const prevPopupComponent = this.popupComponent;
 
     this.popupComponent.setWatchlistClickHandler(this.#handleWatchlistClick);
