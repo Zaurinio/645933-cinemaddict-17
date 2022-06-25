@@ -3,7 +3,7 @@ import { humanizePopupReleaseDate } from '../utils/dates.js';
 import { humanizeCommentDate } from '../utils/dates.js';
 import he from 'he';
 
-const createPopupView = (movie, movieComments) => {
+const createPopupView = (movie, movieComments, deletingCommentIndex) => {
   const { title, totalRating, runtime, genres, description, watchlist, alreadyWatched, favorite, date, ageRating, alternativeTitle, director, writers, actors, poster, releaseCountry, comments, isDisabled, isSaving, isDeleting } = movie;
   const releaseDate = humanizePopupReleaseDate(date);
   const newCommentEmotion = movie.newCommentEmotion;
@@ -32,6 +32,7 @@ const createPopupView = (movie, movieComments) => {
       }
       const { emotion, comment, author } = element;
       const commentDate = humanizeCommentDate(element.date);
+      const elementIndex = movieComments.findIndex((com) => com.id === comments[i]);
 
       commentsElement += `<li class="film-details__comment">
                     <span class="film-details__comment-emoji">
@@ -42,7 +43,7 @@ const createPopupView = (movie, movieComments) => {
                       <p class="film-details__comment-info">
                         <span class="film-details__comment-author">${author}</span>
                         <span class="film-details__comment-day">${commentDate}</span>
-                        <button type="button" class="film-details__comment-delete" ${isDeleting ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : 'Delete'}</button>
+                        <button type="button" class="film-details__comment-delete" ${isDeleting ? 'disabled' : ''}>${deletingCommentIndex === elementIndex && isDeleting ? 'Deleting...' : 'Delete'}</button>
                       </p>
                     </div>
                   </li>`;
@@ -138,7 +139,7 @@ const createPopupView = (movie, movieComments) => {
                         <td class="film-details__cell">${releaseCountry}</td>
                       </tr>
                       <tr class="film-details__row">
-                        <td class="film-details__term">Genres</td>
+                        <td class="film-details__term">${genres.length > 1 ? 'Genres' : 'Genre'}</td>
                         <td class="film-details__cell">
                           ${addMovieGenres()}
                       </tr>
@@ -174,6 +175,7 @@ const createPopupView = (movie, movieComments) => {
 
 export default class PopupView extends AbstractStatefulView {
   #commentsModel = null;
+  deletingCommentIndex = null;
 
   constructor(movie, comments) {
     super();
@@ -184,7 +186,7 @@ export default class PopupView extends AbstractStatefulView {
   }
 
   get template() {
-    return createPopupView(this._state, this.#commentsModel);
+    return createPopupView(this._state, this.#commentsModel, this.deletingCommentIndex);
   }
 
   _restoreHandlers = () => {
@@ -215,24 +217,6 @@ export default class PopupView extends AbstractStatefulView {
     this._setState({
       newCommentText: evt.target.value,
     });
-  };
-
-  static parsePopupToState = (movie) => ({
-    ...movie,
-    newCommentEmotion: 'smile',
-    newCommentText: 'Great movie!',
-    isDisabled: false,
-    isSaving: false,
-    isDeleting: false,
-  });
-
-  static parseStatetoPopup = (state) => {
-    const movie = { ...state };
-
-    delete movie.newCommentEmotion;
-    delete movie.newCommentText;
-
-    return movie;
   };
 
   setCloseButtonClickHandler = (callback) => {
@@ -312,18 +296,27 @@ export default class PopupView extends AbstractStatefulView {
     evt.preventDefault();
     const commentsList = [...evt.target.closest('.film-details__comments-list').children];
 
-    const commentIndex = commentsList.findIndex((elem) => elem === evt.target.closest('.film-details__comment'));
+    this.deletingCommentIndex = commentsList.findIndex((elem) => elem === evt.target.closest('.film-details__comment'));
 
     const commentsIdList = [
-      ...this._state.comments.slice(0, commentIndex),
-      ...this._state.comments.slice(commentIndex + 1),
+      ...this._state.comments.slice(0, this.deletingCommentIndex),
+      ...this._state.comments.slice(this.deletingCommentIndex + 1),
     ];
 
-    this._callback.deleteComment(commentIndex);
+    this._callback.deleteComment(this.deletingCommentIndex);
 
     this.updateElement({
       ...this._state, filmCommentsId: [...commentsIdList]
     }
     );
   };
+
+  static parsePopupToState = (movie) => ({
+    ...movie,
+    newCommentEmotion: 'smile',
+    newCommentText: 'Great movie!',
+    isDisabled: false,
+    isSaving: false,
+    isDeleting: false,
+  });
 }

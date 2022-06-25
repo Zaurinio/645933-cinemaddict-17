@@ -11,6 +11,8 @@ import { sortFilmsByRating, sortFilmsByDate } from '../utils/movie.js';
 import { SortType } from '../const.js';
 import LoadingView from '../view/loading-view.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+import UserProfileView from '../view/user-profile-view.js';
+import FilmsQuantityView from '../view/films-quantity-view.js';
 
 const MOVIE_COUNT_PER_STEP = 5;
 const TimeLimit = {
@@ -26,6 +28,8 @@ export default class PagePresenter {
   #commentsModel = null;
   #popupPresenter = null;
   #sortComponent = null;
+  #profileComponent = null;
+  #moviesQtyComponent = null;
   #loadingComponent = new LoadingView();
   #currentSortType = SortType.DEFAULT;
   #currentFilterType = FilterType.ALL;
@@ -123,7 +127,9 @@ export default class PagePresenter {
         this.#updateOpenedPopup();
         break;
       case UpdateType.MINOR:
+        this.#clearProfile();
         this.#clearPage();
+        this.#renderProfile();
         this.#renderPage();
         this.#updateOpenedPopup();
         break;
@@ -134,11 +140,27 @@ export default class PagePresenter {
       case UpdateType.INIT:
         this.#isLoading = false;
         remove(this.#loadingComponent);
+        this.#renderProfile();
         this.#renderPage();
         break;
     }
   };
 
+  #renderProfile = () => {
+    if (this.#profileComponent !== null) {
+      remove(this.#profileComponent);
+    }
+    const headerMainElement = document.querySelector('.header');
+    this.#profileComponent = new UserProfileView(this.unfilteredMovies);
+    render(this.#profileComponent, headerMainElement);
+  };
+
+  #renderMoviesQty = () => {
+    const moviesQty = this.unfilteredMovies.length;
+    this.#moviesQtyComponent = new FilmsQuantityView(moviesQty);
+
+    return this.#moviesQtyComponent;
+  };
 
   #renderSort = () => {
     this.#sortComponent = new SortView(this.#currentSortType);
@@ -184,6 +206,10 @@ export default class PagePresenter {
     render(this.#showMoreButtonComponent, this.#filmsComponent.filmsList);
   };
 
+  #clearProfile = () => {
+    remove(this.#profileComponent);
+  };
+
   #clearPage = ({ resetRenderedMoviesCount = false } = {}) => {
     const moviesCount = this.movies.length;
 
@@ -194,6 +220,7 @@ export default class PagePresenter {
     remove(this.#emptyPageComponent);
     remove(this.#showMoreButtonComponent);
     remove(this.#loadingComponent);
+    remove(this.#moviesQtyComponent);
 
     if (resetRenderedMoviesCount) {
       this.#renderedMoviesCount = MOVIE_COUNT_PER_STEP;
@@ -241,6 +268,9 @@ export default class PagePresenter {
     if (moviesCount > this.#renderedMoviesCount) {
       this.#renderShowMoreButton();
     }
+
+    const footerStatisticsElement = document.querySelector('.footer__statistics');
+    render(this.#renderMoviesQty(), footerStatisticsElement);
   };
 
   #handleShowMoreButtonClick = () => {

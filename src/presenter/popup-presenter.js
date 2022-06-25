@@ -18,6 +18,7 @@ export default class PopupPresenter {
   movie = null;
   comments = [];
   isLoading = true;
+  #deletingCommentIndex = null;
   #loadingComponent = new LoadingView();
   popupTemplate = null;
 
@@ -41,9 +42,9 @@ export default class PopupPresenter {
   #createPopup = () => {
     this.comments = this.#commentsModel.commentsList;
 
-    this.popupComponent = new PopupView(this.movie, this.comments);
-
     const prevPopupComponent = this.popupComponent;
+
+    this.popupComponent = new PopupView(this.movie, this.comments);
 
     this.popupComponent.setWatchlistClickHandler(this.#handleWatchlistClick);
     this.popupComponent.setWatchedlistClickHandler(this.#handleWatchedClick);
@@ -131,6 +132,7 @@ export default class PopupPresenter {
   };
 
   #handleDeleteButtonClick = (index) => {
+    this.#deletingCommentIndex = index;
     this.#changeData(
       UserAction.DELETE_COMMENT,
       UpdateType.MINOR,

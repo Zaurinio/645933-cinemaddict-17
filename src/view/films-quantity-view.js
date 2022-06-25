@@ -1,13 +1,20 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
-const createFilmsQuantity = () => (
+const createFilmsQuantity = (quantity) => (
   `<section class="footer__statistics">
-  <p>130 291 movies inside</p>
+  <p>${quantity} movies inside</p>
   </section>`
 );
 
 export default class FilmsQuantityView extends AbstractView {
+  #quantity = null;
+
+  constructor(quantity) {
+    super();
+    this.#quantity = quantity;
+  }
+
   get template() {
-    return createFilmsQuantity();
+    return createFilmsQuantity(this.#quantity);
   }
 }

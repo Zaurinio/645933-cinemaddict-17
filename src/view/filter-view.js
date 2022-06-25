@@ -50,6 +50,7 @@ export default class FilterView extends AbstractView {
 
   #filterTypeChangeHandler = (evt) => {
     evt.preventDefault();
-    this._callback.filterTypeChange(evt.target.dataset.filterType);
+    const targetElement = evt.target.tagName === 'A' ? evt.target : evt.target.parentElement;
+    this._callback.filterTypeChange(targetElement.dataset.filterType);
   };
 }
